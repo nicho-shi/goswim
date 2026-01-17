@@ -1,17 +1,16 @@
-# 前端 Dockerfile
-# 从项目根目录运行: docker build -f frontend/Dockerfile -t lapflow-frontend .
-FROM node:18-alpine as build
+# --- 第一阶段：构建阶段 ---
+FROM node:18-alpine AS build-stage
 
 WORKDIR /app
 
-# 复制依赖文件
+# 复制依赖描述文件并安装
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
-# 复制源代码
+# 复制项目所有代码
 COPY . .
 
-# 构建应用
+# 构建应用时传入环境变量
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
 ARG VITE_CLERK_PUBLISHABLE_KEY
@@ -22,17 +21,19 @@ ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
 ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
 ENV VITE_BACKEND_API_URL=$VITE_BACKEND_API_URL
 
+# 构建应用 (Vite 必须步骤)
 RUN npm run build
 
-# 使用 nginx 提供静态文件
-FROM nginx:alpine
+# --- 第二阶段：运行阶段 (使用 Nginx) ---
+FROM nginx:stable-alpine
 
-# 复制构建产物
-COPY --from=build /app/dist /usr/share/nginx/html
+# 从第一阶段复制构建好的静态文件到 Nginx 目录
+COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-# 复制 nginx 配置
+# 复制自定义 Nginx 配置文件（已配置监听 8080 端口）
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+# Google Cloud Run 默认监听 8080 端口
+EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]
