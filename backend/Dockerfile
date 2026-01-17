@@ -22,8 +22,7 @@ COPY . .
 EXPOSE 8080
 
 # 设置环境变量
-ENV PORT=8080
 ENV PYTHONUNBUFFERED=1
 
-# 启动应用
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app
+# 启动应用（使用 Cloud Run 自动设置的 PORT 环境变量，如果不存在则默认 8080）
+CMD exec gunicorn --bind :${PORT:-8080} --workers 1 --threads 8 --timeout 0 app:app

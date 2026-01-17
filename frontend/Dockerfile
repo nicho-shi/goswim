@@ -40,8 +40,5 @@ RUN chmod +x /start-nginx.sh
 # Google Cloud Run 默认监听 8080 端口
 EXPOSE 8080
 
-# 设置默认 PORT 环境变量
-ENV PORT=8080
-
-# 使用启动脚本启动 nginx
+# 使用启动脚本启动 nginx（启动脚本会读取 Cloud Run 自动设置的 PORT 环境变量）
 CMD ["/start-nginx.sh"]

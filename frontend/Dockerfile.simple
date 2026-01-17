@@ -26,7 +26,7 @@ ENV VITE_BACKEND_API_URL=$VITE_BACKEND_API_URL
 RUN npm run build
 
 # 7. Google Cloud Run 默认监听 8080 端口
-ENV PORT=8080
+# PORT 环境变量由 Cloud Run 自动设置，不需要手动设置
 EXPOSE 8080
 
 # 8. 启动应用（使用 vite preview 而不是 npm start）
