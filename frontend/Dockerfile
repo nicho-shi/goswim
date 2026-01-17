@@ -33,7 +33,15 @@ COPY --from=build-stage /app/dist /usr/share/nginx/html
 # 复制自定义 Nginx 配置文件（已配置监听 8080 端口）
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
+# 复制启动脚本
+COPY frontend/start-nginx.sh /start-nginx.sh
+RUN chmod +x /start-nginx.sh
+
 # Google Cloud Run 默认监听 8080 端口
 EXPOSE 8080
 
-CMD ["nginx", "-g", "daemon off;"]
+# 设置默认 PORT 环境变量
+ENV PORT=8080
+
+# 使用启动脚本启动 nginx
+CMD ["/start-nginx.sh"]

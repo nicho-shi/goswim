@@ -36,6 +36,10 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+      - '--set-env-vars'
+      - 'PORT=8080'
 
   # 构建后端
   - name: 'gcr.io/cloud-builders/docker'
@@ -67,6 +71,8 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
 
 substitutions:
   _VITE_SUPABASE_URL: 'your_supabase_url'
