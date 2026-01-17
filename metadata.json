@@ -1,0 +1,5 @@
+{
+  "name": "Lapflow",
+  "description": "A professional tool for competitive swimmers to calculate time differences against qualifying standards, powered by AI to find specific meet cut times.",
+  "requestFramePermissions": []
+}

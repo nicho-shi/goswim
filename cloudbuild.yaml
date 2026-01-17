@@ -1,0 +1,78 @@
+# Cloud Build 配置文件
+# 用于自动构建和部署
+
+steps:
+  # 构建前端
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'gcr.io/$PROJECT_ID/lapflow-frontend:$COMMIT_SHA',
+      '-t', 'gcr.io/$PROJECT_ID/lapflow-frontend:latest',
+      '--build-arg', 'VITE_SUPABASE_URL=$_VITE_SUPABASE_URL',
+      '--build-arg', 'VITE_SUPABASE_ANON_KEY=$_VITE_SUPABASE_ANON_KEY',
+      '--build-arg', 'VITE_CLERK_PUBLISHABLE_KEY=$_VITE_CLERK_PUBLISHABLE_KEY',
+      '--build-arg', 'VITE_BACKEND_API_URL=$_VITE_BACKEND_API_URL',
+      './frontend'
+    ]
+
+  # 推送前端镜像
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/lapflow-frontend:$COMMIT_SHA']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/lapflow-frontend:latest']
+
+  # 部署前端
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'lapflow-frontend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/lapflow-frontend:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+
+  # 构建后端
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'gcr.io/$PROJECT_ID/lapflow-backend:$COMMIT_SHA',
+      '-t', 'gcr.io/$PROJECT_ID/lapflow-backend:latest',
+      './backend'
+    ]
+
+  # 推送后端镜像
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/lapflow-backend:$COMMIT_SHA']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/lapflow-backend:latest']
+
+  # 部署后端
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'lapflow-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/lapflow-backend:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+
+substitutions:
+  _VITE_SUPABASE_URL: 'your_supabase_url'
+  _VITE_SUPABASE_ANON_KEY: 'your_supabase_key'
+  _VITE_CLERK_PUBLISHABLE_KEY: 'your_clerk_key'
+  _VITE_BACKEND_API_URL: 'https://lapflow-backend-xxxxx.run.app'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 1200s
